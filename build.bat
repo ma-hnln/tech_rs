@@ -1,3 +1,6 @@
+rem Make sure that the output directly exists
+mkdir out
+
 rem Run Latex to generate the .aux file required for bibtex
 pdflatex.exe -output-directory out main.tex
 

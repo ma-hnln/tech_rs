@@ -1,0 +1,64 @@
+\documentclass[accentcolor=tud1c,colorback,ngerman,12pt] {tudreport}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{acronym}
+\usepackage{tabularx}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{rotating}
+
+\usepackage[%
+  backend=bibtex      % biber or bibtex
+ ,style=alphabetic    % Alphabeticalsch
+ %,style=numeric-comp  % numerical-compressed
+ ,sorting=none        % no sorting
+ ,sortcites=true      % some other example options ...
+ ,block=none
+ ,indexing=false
+ ,citereset=none
+ ,isbn=false
+ ,url=true
+ ,doi=true            % prints doi
+ ,natbib=true         % if you need natbib functions
+]{biblatex}
+
+\addbibresource{bib.bib}  % better than \bibliography
+
+\makeatother
+
+\title{\textbf{Rechnersysteme II Erste Übung}}
+\subtitle{Ausarbeitung vorgelegt von Ela, Marcel}
+\subsubtitle{Betreuer: Dipl.-Ing. (Name des Betreuers)\\
+       Beginn: (Beginndatum) \textbar\ Abgabe: (Abgabedatum)\\
+       Institut f\"ur Datentechnik\hfill\textbar\hfill Fachgebiet Rechnersysteme\hfill\textbar\hfill Prof.\,Dr.-Ing.\, Christian Hochberger}
+\setinstitutionlogo{images/logo.pdf}
+
+\begin{document}
+
+%% Titel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\maketitle
+\cleardoublepage
+
+%% Vorgeplnkel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagestyle{empty}
+
+%% Main %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagestyle{headings}
+\pagenumbering{arabic}
+  \include{intro}
+  \include{tasks}
+  %% include further files here ... %
+
+%% Appendix %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\listoffigures
+
+\newpage
+
+\nocite{*}
+
+\printbibliography
+
+\end{document}

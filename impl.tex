@@ -1,0 +1,42 @@
+\chapter{Implementation} % (fold)
+\label{cha:impl}
+	Just like in the previous chapter [\ref{cha:tasks}], every task will have its implementation process described in its own section.
+
+	\section{Task 1} % (fold)
+	\label{sec:impl_task_1}
+		
+	% section task_1 (end)
+
+	\section{Task 2} % (fold)
+	\label{sec:impl_task_2}
+		
+	% section task_2 (end)
+
+	\section{Task 3} % (fold)
+	\label{sec:impl_task_3}
+		
+	% section task_3 (end)
+
+	\section{Bonus Task 1} % (fold)
+	\label{sec:impl_bonus_task_1}
+		The first important question for solving this task is which components may profit from an interrupt driven operation. Both I2C and the SPI master interfaces are associated with waiting times when using them. 
+
+		Updates of the display are limited to three bytes in size as measurements in cm will not produce results with more than three digits when considering the capabilities of the ultrasonic sensor. Furthermore, communication with the display (using the SPI interface) only has to occur when there is a change in the data to display. Busy waiting a small amount of cycles for these three bytes to be send seems to be preferable to the additional complexity introduced by implementing an interrupt based solution.
+		All this shows that it is not worth while to change the display update procedures to be interrupt driven.
+
+		Read and write transaction sizes for accessing the ultrasonic sensor are comparable to the display update sizes. On the other hand, considerable waiting time is associated with retrieving the measurement results. Using the fact that a reading the sensor through the I2C interface will only complete once its measurement process is finished, it is possible to implement a feasible interrupt based sensor write and read process which actually provides large performance benefits.
+
+		Reading the SpartanMC manual provides basic information about the simple interrupt controller which is mandatory to be able to use interrupts in the SpartanMC context. Activating the interrupts on the I2C master and connecting its interrupt output port to the interrupt controller completes the peripheral side of the required hardware changes. Afterwards the interrupt signal of the controller is connected to the SpartanMC processor. At this point it remains to implement the interrupt service routine (ISR).
+
+		To accommodate the different states of setting up a new measurement and retrieving the result, a simple state machine is required. We choose to implement state changes and state performed operations in the main loop to reduce the size and complexity of the ISR. % describe FSM: states and state changes
+
+		% - state changes initiated by boolean global
+		% - boolean value switched when ISR is called
+	% section bonus_task_1 (end)
+
+	\section{Bonus Task 2} % (fold)
+	\label{sec:impl_bonus_task_2}
+		% - use autoperf
+		% - asm of sleep and sleep_sleep provides a good way to prove the execution characteristics 
+	% section bonus_task_2 (end)
+% chapter impl (end)

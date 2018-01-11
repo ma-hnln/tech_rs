@@ -1,10 +1,55 @@
 \chapter{Implementation} % (fold)
 \label{cha:impl}
-	Just like in the previous chapter [\ref{cha:tasks}], every task will have its implementation process described in its own section.
+	Just like in the previous chapter [\ref{cha:task}], every task will have its implementation process described in its own section.
 
 	\section{Task 1} % (fold)
 	\label{sec:impl_task_1}
-		
+		The implemented system consists of an UART Light peripheral as well as an I2C Master. More details concerning these two will be given in the following paragraphs. A third paragraph implements a filter which shall detect erroneous data.
+	
+		\subsection{UART Light} % (fold)
+		\label{sub:uart_light}
+			In JConfig, we selected the Uart Light Bus from the peripheral modules, setting a baudrate of 115200 and the same clock as the Spartan MC core. Using printf(), we sent the data measured by the sensor to the computer, where we read it from /dev/ttyUSB0.
+		% subsection uart_light (end)
+
+		\subsection{I2C Master} % (fold)
+		\label{i2c_master}
+			In this task, a basic implementation of I2C was designed, without making use of interrupts. First, I2C was added in JConfig and the SDA and SCL signals were connected to the pins of the FPGA according to the FPGA pin sheet.
+			In order to fulfil the task, the following functions were implemented, besides the main function:
+			
+			\begin{itemize}
+				\item sensor\_enable(i2c\_master\_regs\_t* i2c, int prescaler)
+				\item sensor\_send(i2c\_master\_regs\_t* i2c, const unsigned char ch, const int slv\_addr, const int reg)
+				\item sensor\_read()
+		   	\end{itemize}
+			
+			\paragraph{Enable and Configuration} % (fold)
+	   		\label{par:enable_task1}
+   				The "sensor\_enable" function sets the bits of the control register, in order to establish a correct I2C connection. The I2C core is enabled by setting the CORE\_EN bit. Additionally, the right frequency of the SCL line is chosen by assigning the prescaler with the correct value. In the main function, this corresponds to a frequency of \SI{40}{\kilo\hertz}.
+			% paragraph enable_task1 (end)
+				
+			\paragraph{Data Write} % (fold)
+	   		\label{par:data_write_task1}
+	   			A write access, which occurs when calling the "sensor\_send" function, must contain the id of the slave, the register number where the data will be written and the data to be sent. The transfer is initiated by setting the STA bit and the number of transferred bytes. Counting the number of bytes sent as useful data is not enough. The COUNT value takes into consideration also the bytes containing the slave address and the register number.
+				We use this function to tell the sensor to start ranging in centimetres. This means that we write the value 81 in the register 0.
+			% paragraph data_write_task1 (end)
+			
+			\paragraph{Data Read} % (fold)
+	   		\label{par:data_read_task1}
+	   			The read access starts with a write of two bytes, telling the sensor the register number from which we want to read. Afterwards, a read request is initiated, by setting the last bit of the slave id. Additionally, the RD bit of the Command register is 1. The COUNT value is now 3, which means that 1 byte will be written (the slave id) and 2 bytes are requested. These 2 come from the fact that the result is split in the registers 2 and 3 of the sensor and has 16 bits. The result is than read from the data bits of the I2C register and the STO bit of the command register is set.
+			% paragraph data_read_task1 (end)
+			
+			\paragraph{Main function} % (fold)
+	   		\label{par:data_read_task1}
+	   			As stated above, the main function sets a frequency of 40kHz for the SCL line, by calling the sensor\_enable function. It sends to the sensor the command to start measuring in centimetres. A delay was implemented to wait for the SRF02 to finish ranging and afterwards the result is read through the I2C and sent to the computer via the UART Light. This is done in an endless loop.
+			% paragraph data_read_task1 (end)
+		% subsection i2c_master (end)
+
+		\subsection{Filtering of acquired data} % (fold)
+		\label{sub:filter}
+			In order to filter the information obtained from the distance measuring sensor, a comparison to the before received data must be conducted. Thus, storing part of the measured data is necessary.
+			This project proposes a simple implementation of such a filter by storing ten measured values and comparing their mean to the new one. If the latest measurement is greater or smaller than the mean by 50 units, than the value is not printed. However, it is stored. When the program starts, no value is already available, thus the first one is printed without filter. In case the first value was incorrect, the filter will converge anyway to a good result after some measurements.
+			This approach was easy and fast to implement and returns good results for this type of application. If a high reliable result was required, then the Kalman filter could have been a good replacement. In this case, the behaviour of the sensor must be described.
+		% section filter (end)
 	% section task_1 (end)
 
 	\section{Task 2} % (fold)
@@ -86,10 +131,10 @@
 		\label{sub:initial_considerations}
 			The first important question for solving this task is which components may profit from an interrupt driven operation. Both I2C and the SPI master interfaces are associated with waiting times when using them. 
 
-			Updates of the display are limited to three bytes in size as measurements in cm will not produce results with more than three digits when considering the capabilities of the ultrasonic sensor. Furthermore, communication with the display (using the SPI interface) only has to occur when there is a change in the data to display. Busy waiting a small amount of cycles for these three bytes to be send seems to be preferable to the additional complexity introduced by implementing an interrupt based solution.
+			Updates of the display are limited to three bytes in size as measurements in cm will not produce results with more than three digits when considering the capabilities of the ultrasonic sensor. Furthermore, communication with the display (using the SPI interface) only has to occur when there is a change in the data to display. Busy waiting a small amount of cycles for these three bytes to be send seems to be preferable to the additional complexity introduced by implementing an interrupt based solution. Additionally, as section [\ref{sub:impl_spi_implementation}] shows, the SPI interface is working at clock frequency ranges up to \SI{10}{\mega\hertz}. This is still slower than the processor clock (\SI{60}{\mega\hertz}) but the difference does not span multiple orders of magnitude. 
 			All this shows that it is not worth while to change the display update procedures to be interrupt driven.
 
-			Read and write transaction sizes for accessing the ultrasonic sensor are comparable to the display update sizes. On the other hand, considerable waiting time is associated with retrieving the measurement results. Using the fact that a reading the sensor through the I2C interface will only complete once its measurement process is finished, it is possible to implement a feasible interrupt based sensor write and read process which actually provides large performance benefits.
+			Read and write transaction sizes for accessing the ultrasonic sensor are comparable to the display update sizes. On the other hand, considerable waiting time is associated with retrieving the measurement results. As the I2C interface operates at a frequency of \SI{40}{\kilo\hertz}, it is possible to implement a feasible interrupt based sensor write and read process which actually provides large performance benefits. With this in mind, support for interrupt based I2C operation was implemented.
 		% subsection initial_considerations (end)
 
 		\subsection{Additional Hardware} % (fold)
@@ -100,30 +145,34 @@
 		\subsection{Measurement FSM and Interrupt Handling} % (fold)
 		\label{sub:measurement_fsm_and_interrupt_handling}
 			To accommodate the different states of setting up a new measurement and retrieving the result, a simple state machine is required. We choose to implement state changes and state performed operations in the main loop to reduce the size and complexity of the ISR.
-			...
+			A signal called change\_state is set each time an interrupt occurs. In an endless loop, the main function evaluates this signal. When equal to one, the current state is evaluated and the change\_state signal is reset, so that no further changes of the state will occur without an interrupt.
 
 			\paragraph{States and Transitions} % (fold)
 			\label{par:states_and_transitions}
 				% state and state changes
+				The reset state is INIT\_STATE and it starts a new measurement in centimetres. An interrupt occurs when this control data was sent and afterwards the next state, "WAITING\_FOR\_MEASURMENT\_REQUEST\_SEND", is evaluated. In this step, a transfer requesting the firmware version is conducted. In the next phase, the acknowledge bit is checked. If it is 0, an I2C read access occurs. Otherwise, the read request is sent again. When reading the firmware version, 0xff means that the sensor is currently ranging and ignored the I2C request. The state machine does a polling until the result is available. When this happens, a read request starting from register two is sent. If no error occurred in the transfer, a read access of two bytes is conducted. In the "WAITING\_FOR\_REQUEST\_RECEIVE\_DATA" state, the value is read from the data register, it is filtered and if valid, it is printed on the OLED display.
 			% paragraph states_and_transitions (end)
-
+			
 			\paragraph{Causes for Interrupts} % (fold)
 			\label{par:causes_for_interrupts}
-				% failure and transactions completion
+				In order to understand better what caused the interrupts, we analysed the Verilog files of I2C. 
 			% paragraph causes_for_interrupts (end)
+			
+			\paragraph{The Interrupt Service Routine} % (fold)
+			\label{par:impl_isr}
+				The interrupt procedure is called automatically when an interrupt occurs. It has the main purpose of setting the "change\_state" signal, described above. It also reads the status register, because addressing the I2C module resets the interrupt flag.
+			% paragraph impl_isr (end)
 
 			\paragraph{Required Workarounds} % (fold)
 			\label{par:required_workarounds}
-				% polling the sensor version and defeating the purpose of interrupts
+				The SRF02 sensor needs around \SI{65}{\milli\second} in order to complete a measurement. In the original solution, we implemented a simple delay in order to overcome this issue. However, after designing a finite state machine to work with interrupts, we removed these delays. Thus, we sometimes got unrealistic values from the sensor. This was because the sensor did not finish ranging.
+				In order to overcome this issue, we extended the initial state machine in a way that before requesting a result, the software version from register 0 is required. According to the data sheet of the sensor, is the measurement did not complete, the device will not respond to I2C request and the I2C Master will receive 0xff on the data bus. A value different form 0xff signals that the ranging is complete, so we continue with requesting the result from the registers two and three.
 			% paragraph required_workarounds (end)
 
 			% - state changes initiated by boolean global
 			% - boolean value switched when ISR is called
 			% - check the new state of the code
 		% subsection measurement_fsm_and_interrupt_handling (end)
-
-
-
 	% section bonus_task_1 (end)
 
 	\section{Bonus Task 2} % (fold)

@@ -96,7 +96,7 @@
 
 			\paragraph{Global Shift} % (fold)
 			\label{par:global_shift}
-				A global variable called \“Shift\” is used to place correctly the text on the horizontal axis of the display. Experimentally, we set this variable to the value 28. 
+				A global variable called "Shift" is used to place correctly the text on the horizontal axis of the display. Experimentally, we set this variable to the value 28. 
 			% paragraph global_shift (end)
 		% subsection display_driver_cleanup (end)
 
@@ -113,13 +113,13 @@
 		
 		\subsection{Integer to String Conversion} % (fold)
 		\label{sub:integer_to_string_conversion}
-			The data read from the sensor was stored as an integer value. To print it on the OLED display, we implemented a function that converts an integer to a string: “int\_to\_str”. Each cipher of the number is evaluated, and a string is constructed accordingly. The function can convert a number less than 1000. If the first cipher is a zero, it is replaced by a space character when building the string. Since the sensor can measure at least 15cm, there is no need to replace the zeroes on the second position.  
+			The data read from the sensor was stored as an integer value. To print it on the OLED display, we implemented a function that converts an integer to a string: "int\_to\_str". Each cipher of the number is evaluated, and a string is constructed accordingly. The function can convert a number less than 1000. If the first cipher is a zero, it is replaced by a space character when building the string. Since the sensor can measure at least 15cm, there is no need to replace the zeroes on the second position.  
 		% subsection integer_to_string_conversion (end)
 
 		\subsection{Integration} % (fold)
 		\label{sub:integration}
-			The two functionalities are combined in a new main function. The SPI peripheral, namely the OLED display, is enabled and a delay is inserted to wait for this process to complete. Some data regarding the control and status registers is sent via UART for debug purposes. After the SPI slave is selected, the display and it’s RAM are initialized by calling the “OLED_Init_25664” and “Clear\_RAM” procedures. Using the function “Show\_String\_25664” we print the text “Der Abstand ist: ” and emphasize it through some dashed lines. 
-			In an endless loop, the function “sensor\_read” is called. This starts a new measurement in centimeters, and after a delay of approximately 1000*6000*3 clock cycles, which results in a delay of around \SI{300}{\milli\second}, the result is read from the sensor. This delay is sufficient for the sensor, which according to the datasheet is able to measure in \SI{65}{\milli\second}. To save some time, we can reduce the value given to the sleep function by 3 (1000*2000*3 clock cycles). The value read from the sensor is converted to a string and is printed on the display. It comes after the text “Der Abstand ist: “, thus an adjustment of the horizontal offset was needed.
+			The two functionalities are combined in a new main function. The SPI peripheral, namely the OLED display, is enabled and a delay is inserted to wait for this process to complete. Some data regarding the control and status registers is sent via UART for debug purposes. After the SPI slave is selected, the display and it’s RAM are initialized by calling the "OLED\_Init\_25664" and "Clear\_RAM" procedures. Using the function "Show\_String\_25664" we print the text "Der Abstand ist: " and emphasize it through some dashed lines. 
+			In an endless loop, the function "sensor\_read" is called. This starts a new measurement in centimeters, and after a delay of approximately 1000*6000*3 clock cycles, which results in a delay of around \SI{300}{\milli\second}, the result is read from the sensor. This delay is sufficient for the sensor, which according to the datasheet is able to measure in \SI{65}{\milli\second}. To save some time, we can reduce the value given to the sleep function by 3 (1000*2000*3 clock cycles). The value read from the sensor is converted to a string and is printed on the display. It comes after the text "Der Abstand ist: ", thus an adjustment of the horizontal offset was needed.
 
 		% subsection integration (end)
 	% section task_3 (end)
@@ -156,7 +156,7 @@
 			
 			\paragraph{Causes for Interrupts} % (fold)
 			\label{par:causes_for_interrupts}
-				When implementing the solution containing interrupts, a difficulty was understanding when an interrupt occurs. To avoid any possible errors, we looked directly in the Verilog files. From the code we understood that the interrupt flag is reset when the I2C module is addressed. Thus, we decided to read the status register when entering the interrupt routine. Only after a full byte was sent could an interrupt occur and even then, just in certain cases. One example was when the NO_ACK bit of the status register was one. In the beginning we expected an interrupt only after a full transaction was completed, so we omitted this case. After including it in the state machine, we obtained a functional code.  
+				When implementing the solution containing interrupts, a difficulty was understanding when an interrupt occurs. To avoid any possible errors, we looked directly in the Verilog files. From the code we understood that the interrupt flag is reset when the I2C module is addressed. Thus, we decided to read the status register when entering the interrupt routine. Only after a full byte was sent could an interrupt occur and even then, just in certain cases. One example was when the NO\_ACK bit of the status register was one. In the beginning we expected an interrupt only after a full transaction was completed, so we omitted this case. After including it in the state machine, we obtained a functional code.  
 			% paragraph causes_for_interrupts (end)
 			
 			\paragraph{The Interrupt Service Routine} % (fold)
@@ -179,12 +179,12 @@
 	\section{Bonus Task 2} % (fold)
 	\label{sec:impl_bonus_task_2}
 		% - use autoperf
-		The third task was fulfilled using the performance counter. This was added in the jcnofig tool, by selecting this feature from the parameters of the “spartanmc\_0”. In order to evaluate the sleep() function, one cycle counter was used for which the prescaler variable was set to zero. The following sequence of functions was implemented: perf\_init(\*), perf\_start(\*), sleep(\*), perf\_stop(\*), perf\_read(\*), perf\_results\_printf(\*), perf_reset(). The following values were obtained when profiling the sleep function:
+		The third task was fulfilled using the performance counter. This was added in the jcnofig tool, by selecting this feature from the parameters of the "spartanmc\_0". In order to evaluate the sleep() function, one cycle counter was used for which the prescaler variable was set to zero. The following sequence of functions was implemented: perf\_init(\*), perf\_start(\*), sleep(\*), perf\_stop(\*), perf\_read(\*), perf\_results\_printf(\*), perf\_reset(). The following values were obtained when profiling the sleep function:
 		\begin{itemize}
 			\item Sleep(5000)  lead to 15012 cycles
 			\item Sleep(5000)  lead to 15012 cycles
 		\end{itemize}
-		According to the description of this function, it returns a delay of 6 \+  3 \* input\_value clock cycles. In the first example, 6 cycles more are needed while in the second one, extra 5 cycles occur. This could be due to ????????????????????????????????????????????? (some initial instructions & branch? )
+		According to the description of this function, it returns a delay of 6 \+  3 \* input\_value clock cycles. In the first example, 6 cycles more are needed while in the second one, extra 5 cycles occur. This could be due to ... \textbf{I will take another look at the asm of sleep}
 		% - asm of sleep and sleep_sleep provides a good way to prove the execution characteristics 
 	% section bonus_task_2 (end)
 % chapter impl (end)

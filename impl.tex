@@ -25,37 +25,37 @@
 			
 			\paragraph{Enable and Configuration} % (fold)
 	   		\label{par:enable_task1}
-   				The "sensor\_enable" procedure sets the bits of the control register, in order to establish a correct I2C connection. The I2C core is enabled by setting the CORE\_EN bit. Additionally, the right frequency of the SCL line is chosen by assigning the prescaler with the correct value. In the main procedure, this corresponds to a frequency of \SI{40}{\kilo\hertz}.
+   				The "sensor\_enable" procedure sets the bits of the control register, in order to establish a correct I2C connection. The I2C core is enabled by setting the CORE\_EN bit. Additionally, the right frequency of the SCL line is chosen by assigning the prescaler with the correct value. In the main procedure, this corresponds to a frequency of \SI{40}{\kilo\hertz}, which was computed using the formula:  prescaler = (peripheral\_clock /(5 * desired\_SCL)) -1
 			% paragraph enable_task1 (end)
 				
 			\paragraph{Data Write} % (fold)
 	   		\label{par:data_write_task1}
-	   			A write access, which occurs when calling the "sensor\_send" procedure, must contain the ID of the slave, the register number where the data will be written and the data to be send. The transfer is initiated by setting the STA bit and the number of transferred bytes. Counting the number of bytes send as useful data is not enough. The COUNT value takes into consideration also the bytes containing the slave address and the register number.
+	   			A write access, which occurs when calling the "sensor\_send" procedure, must contain the ID of the slave, the register number where the data will be written and the information to be sent. The transfer is initiated by setting the STA bit and the number of transferred bytes. When computing this value, counting the bytes sent as useful data is not enough. The COUNT value takes into consideration also the bytes containing the slave address and the register number.
 				We use this procedure to tell the sensor to start ranging in centimetres. This means that we write the value \num{81} to register zero.
 			% paragraph data_write_task1 (end)
 			
 			\paragraph{Data Read} % (fold)
 	   		\label{par:data_read_task1}
-	   			The read access starts with a write of two bytes, telling the sensor the register number from which we want to read. Afterwards, a read request is initiated, by setting the last bit of the slave ID. Additionally, the RD bit of the Command register is one. The COUNT value is now three, which means that one byte will be written (the slave ID) and two bytes are requested. These two bytes come from the fact that the result is split in the registers two and three of the sensor and has \num{16} bits. The result is than read from the data bits of the I2C register and the STO bit of the command register is set.
+	   			The read access starts with a write of two bytes, telling the sensor the register number from which we want to receive data. Afterwards, a read request is initiated, by setting the last bit of the slave ID. Additionally, the RD bit of the Command register is one. The COUNT value is now three, which means that one byte will be written (the slave ID) and two bytes are requested. The number of demanded bytes comes from the fact that the result is split in the registers two and three of the sensor and has \num{16} bits. The result is than read from the I2C data register and the STO bit of the command register is set.
 			% paragraph data_read_task1 (end)
 			
 			\paragraph{Main procedure} % (fold)
 	   		\label{par:data_read_task1}
-	   			As stated above, the main procedure sets a frequency of \SI{40}{\kilo\hertz} for the SCL line, by calling the sensor\_enable procedure. It sends to the sensor the command to start measuring in centimetres. A delay (greater \SI{65}{\milli\second}, as per the sensors manual) was implemented to wait for the SRF02 to finish ranging and afterwards the result is read through the I2C and send to the computer via the UART Light. This is done in an endless loop.
+	   			As stated above, the main procedure sets a frequency of \SI{40}{\kilo\hertz} for the SCL line, by calling the sensor\_enable function. Subsequently, it tells the sensor to start measuring in centimetres. A delay (greater \SI{65}{\milli\second}, as per the sensors manual) was implemented to wait for the SRF02 to finish ranging. Afterwards, the result is read through the I2C and sent to the computer via the UART Light. This is done in an endless loop.
 			% paragraph data_read_task1 (end)
 		% subsection i2c_master (end)
 
 		\subsection{Filtering of acquired data} % (fold)
 		\label{sub:filter}
 			In order to filter the information obtained from the distance measuring sensor, a comparison to the previously received data must be conducted. Thus, storing part of the measured data is necessary.
-			This project proposes a simple implementation of such a filter by storing ten measured values and comparing their mean to the new one. If the latest measurement is greater or smaller than the mean by 50 units, than the value is not printed. However, it is stored. When the program starts, no value is already available, thus the first one is printed without filter. In case the first value was incorrect, the filter will converge anyway to a good result after some measurements.
-			This approach was easy and fast to implement and returns good results for this type of application. If a high reliable result was required, then the Kalman filter could have been a good replacement. In this case, the behaviour of the sensor must be described.
+			This project proposes a simple implementation of such a filter by storing ten measured values and comparing their mean to the new data. If the latest measurement is greater or smaller than the mean by 50 units, than the value is not printed. However, it is stored. When the program starts, no value is already available, thus the first one is printed without any filtering. In case the first value was incorrect, the filter will converge to a good result after some measurements.
+			This approach was easy and fast to implement and returns good results for this type of application. If a high reliable result was required, then the Kalman filter could have been a good replacement. When using such an approach, the behaviour of the sensor must be described.
 		% section filter (end)
 	% section task_1 (end)
 
 	\section{Task II} % (fold)
 	\label{sec:impl_task_2}
-		Communication with the OLED display is to be facilitated by using an SPI master, which has to be added to the jConfig project. Connecting the SPI master instance to the required FPGA pins is straight forward as the required connections (CS, SCLK, SDIN, RES) are denoted by the the provided FPGA pin sheet. However, the displays' reset pin requires a separate output port instance to be generated by jConfig and can not be connected directly to the SPI paster peripheral. 
+		Communication with the OLED display is to be facilitated by using an SPI master, which has to be added to the jConfig project. Connecting the SPI master instance to the required FPGA pins is straight forward as the required connections (CS, SCLK, SDIN, RES) are denoted by the the provided FPGA pin sheet. However, the displays' reset pin requires a separate output port instance to be generated by jConfig and can not be connected directly to the SPI master peripheral. 
 
 		\subsection{SPI Implementation} % (fold)
 		\label{sub:impl_spi_implementation}
@@ -81,7 +81,7 @@
 
 	   		\paragraph{Data Write} % (fold)
 	   		\label{par:data_write}
-	   			As there is no need to retrieve data from to display, the write implementation will suffice to be able to use it. Writing to the masters data output register and waiting for all bits to be send is the only thing to do. This first (but also the final I2C interrupt driven) implementation is polling the fill bits of the status register until the retrieved value is zero, denoting an empty output register and the ability to send more data.
+	   			As there is no need to retrieve data from to display, the write implementation will suffice to be able to use it. Writing to the masters data output register and waiting for all bits to be sent is the only thing to do. This first (but also the final I2C interrupt driven) implementation is polling the fill bits of the status register until the retrieved value is zero, denoting an empty output register and the ability to send more data.
 	   			It is notable that the nine bits (one selecting command/data mode and eight with actual payload) to send are composed in such a way that the mode selection bit is the highest one.
 	   		% paragraph data_write (end)
 		% subsection impl_spi_implementation (end)
@@ -119,12 +119,12 @@
 
 		\subsection{Integration} % (fold)
 		\label{sub:integration}
-			The two functionalities are combined in a new main procedure. The SPI peripheral, namely the OLED display, is enabled and a delay is inserted to wait for this process to complete. Some data regarding the control and status registers is send via UART for debug purposes. After the SPI slave is selected, the display and it’s RAM are initialized by calling the "OLED\_Init\_25664" and "Clear\_RAM" procedures. Using the procedure "Show\_String\_25664" we print the text "Der Abstand ist: " and emphasize it through some dashed lines. 
+			The two functionalities are combined in a new main procedure. The SPI peripheral, namely the OLED display, is enabled and a delay is inserted to wait for this process to complete. Some data regarding the control and status registers is sent via UART for debug purposes. After the SPI slave is selected, the display and its RAM are initialized by calling the "OLED\_Init\_25664" and "Clear\_RAM" procedures. Using the procedure "Show\_String\_25664", the text "Der Abstand ist: " is printed and emphasized through dashed lines. 
 			In an endless loop, the procedure "sensor\_read" is called. This starts a new measurement in centimetres, and after a delay of approximately 
 			\begin{math} 
 				1000 \times 6000 \times 3 
 			\end{math} 
-			clock cycles, which results in a delay of around \SI{300}{\milli\second}, the result is read from the sensor. This delay is sufficient for the sensor, which according to the data sheet is able to measure in \SI{65}{\milli\second}. To save some time, we can divide the value given to the sleep procedure by three, as this will still suffice. The value read from the sensor is converted to a string and is printed on the display. It comes after the text "Der Abstand ist: ", thus an adjustment of the horizontal offset was needed.
+			clock cycles, which results in a delay of around \SI{300}{\milli\second}, the result is read from the sensor. This delay is sufficient for the sensor, which according to the data sheet is able to measure in \SI{65}{\milli\second}. To save some time, we can divide the value given to the sleep procedure by three, as this will still suffice. The value read from the sensor is converted to a string and is printed on the display. It appears after the text "Der Abstand ist: ", thus an adjustment of the horizontal offset was needed.
 		% subsection integration (end)
 	% section task_3 (end)
 

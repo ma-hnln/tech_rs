@@ -189,7 +189,7 @@
 			\begin{figure}[!htb]
 				\centering
 					\includegraphics[width=0.9\textwidth]{images/sleep_asm.jpg}
-				\caption{sleep and sleep\_sleep assembly, taken from file sleep.s}
+				\caption{sleep and sleep\_sleep assembly, taken from file sleep.s of the SpartanMC sources}
 				\label{fig:sleep_asm}
 			\end{figure}
 
@@ -199,7 +199,7 @@
 				delay\_in\_cycles = 6 + 3 \times input\_value
 			\end{equation} 
 			Looking at figure [\ref{fig:sleep_asm}] it can easily be seen that lines eleven to 14 are causing the first four and lines 32 to 33 the last two static execution cycles, leading the the additional six cycles in the given equation \ref{eq:initial_expected_sleep_runtime}. Looping itself consists of three instructions (lines 25 to 27) and is therefore responsible for having to multiply the input value by three.\\
-			The example call of sleep shows that six additional cycles of delay are introduced by a call to sleep. These cycles can not deduced by equation \ref{eq:initial_expected_sleep_runtime}. This is due to the fact that the act of calling the sleep procedure, will cause additional cycles to be spend on the respective operations. These additional cycles are out of the scope of the sleep procedure it self and are therefore not captured by their static runtime component. However, it is notable that the implementation of sleep is intertwined with sleep\_sleep (see fig. [\ref{fig:sleep_asm}]), causing three additional static cycles that should be mentioned by equation \ref{eq:initial_expected_sleep_runtime}. All this leads to the corrected equation \ref{eq:corrected_expected_sleep_runtime}.
+			The example call of sleep shows that six additional cycles of delay are introduced. These cycles can not be deduced by equation \ref{eq:initial_expected_sleep_runtime}. This is due to the fact that the act of calling the sleep procedure, will cause additional cycles to be spend on the respective instructions. These additional cycles are out of the scope of the sleep procedure it self and are therefore not captured by its static runtime component. However, it is notable that the implementation of sleep is intertwined with sleep\_sleep (see fig. [\ref{fig:sleep_asm}]), causing three additional static cycles that should be mentioned by equation \ref{eq:initial_expected_sleep_runtime}. All this leads to the corrected equation \ref{eq:corrected_expected_sleep_runtime}.
 			\begin{equation} 
 				\label{eq:corrected_expected_sleep_runtime}
 				delay\_in\_cycles = 9 + 3 \times input\_value

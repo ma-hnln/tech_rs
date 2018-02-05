@@ -2,11 +2,13 @@
 \label{cha:intro}
 	The second exercise of the lecture Rechnersysteme II revolves around the implementation of a software solution for acquiring satellite signals in the Global Positioning System (GPS). Target hardware is the AMIDAR processor, with its dynamic hardware acceleration capabilities based on the CGRA concept. The later sections of this chapter provide a brief overview of both AMIDAR and the CGRA.
 
-	The main assignment of the exercise is to implement a working GPS acquisition algorithm and then optimise it in two dimensions: performance and energy consumption. Detailed descriptions for both sub tasks can be found in the following chapter [\ref{cha:task}], while the implementation details are deferred to chapter [\ref{impl}].
+	The main assignment of the exercise is to implement a working GPS acquisition algorithm and then optimise it in two dimensions: performance and energy consumption. Both parameters are going to be measured by the AMIDAR simulator. Detailed descriptions for both sub tasks can be found in the following chapter [\ref{cha:task}], while the implementation details are deferred to chapter [\ref{impl}].
 
 	\section{GPS Acquisition} % (fold)
 	\label{sec:intro_acq}
-
+		The first step in being able to make use of GPS is to acquire satellite signals such that the own position may be tracked by using the information provided by multiple satellites.
+		Focus of this exercise are the L1 carrier bands' (\si{1575}\mega\herz) Coarse-acquisition (C/A) codes. GPS is using a Code Division Multiple Access scheme to discriminate the different satellite signals. The C/A codes are therefore different for each satellite and are locally available to the receiver. 
+		Discrimination of the different satellites is performed under the assumption that the C/A codes are orthogonal codes which. This means that the cross correlation of unequal C/A codes yields a minimal result. Cross correlation is expressed in terms of the convolution of the two signals, which in turn means that it is possible to use the Discrete Fourier Transform to solve this problem by using element wise multiplication in the frequency domain. This approach was presented to us with the exercise material and is going to be used by our implementation.
 	% section intro_acq (end)	
 
 	\section{AMIDAR} % (fold)

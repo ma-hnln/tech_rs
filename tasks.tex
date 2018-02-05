@@ -1,33 +1,15 @@
 \chapter{Task Description}
 \label{cha:task}
-	This chapter provides an overview of the tasks which are part of the exercise. All three mandatory tasks [\ref{sec:task_1}], [\ref{sec:task_2}] and [\ref{sec:task_3}] are treated right away as they form the basis for one of the bonus tasks and are resulting in a usable distance meter.
-	The bonus tasks are listed in more detail in the later parts of this chapter.
+	This chapter provides an overview of the two tasks which are part of the exercise.
 
-	\section{Task I} % (fold)
-	\label{sec:task_1}
-		The first task of the exercise is concerned with implementing a first version of a driver to be able to communicate with the ultrasonic sensor. A simple system consisting of the SpartanMC processor, a UART Light peripheral and a I2C master forms the basis for the initial draft of the measurement setup.
-		Measured data should be displayed on the remote computer which is connected to the development board via UART Light (over USB). To start and retrieve the measurements and their resulting data, a driver for the I2C master hast to be implemented.
-	% section task_1 (end)
+	\section{Maximum Performance} % (fold)
+	\label{sec:task_max_perf}
+		
+	% section task_max_perf (end)
 
-	\section{Task II} % (fold)
-	\label{sec:task_2}
-		Getting the OLED display in its operational state is the focus of this task. The display driver itself is provided and has to be adjusted to be usable in the context of this exercise.
-		Communication between the display and the SpartanMC is facilitated by a SPI master interface which has to be introduced to the hardware design beforehand.
-	% section task_2 (end)
-
-	\section{Task III} % (fold)
-	\label{sec:task_3}
-		Combining the results of tasks [\ref{sec:task_1}] and [\ref{sec:task_2}], the final mandatory task enables the use of the ultrasonic sensor and the OLED display as a standalone distance meter. Measured data should now be displayed on the OLED display.
-	% section task_3 (end)
-
-	\section{Bonus Task I} % (fold)
-	\label{sec:bonus_task_1}
-		Up until this point the drivers for the OLED display and the ultrasonic sensor are both actively waiting for bus transactions to complete. This practice results in a large amount of wasted processor cycles and can be improved by resorting to an interrupt driven approach. 
-	% section bonus_task_1 (end)
-
-	\section{Bonus Task II} % (fold)
-	\label{sec:bonus_task_2}
-		Code profiling, to be able to determine the temporal characteristics, is the topic of this task. Both procedures sleep and sleep\_sleep are subject to this profiling. Furthermore, it should be verified that the input arguments to both procedures are reflected by the expected waiting time.
-	% section bonus_task_2 (end)
+	\section{Minimum Energy Consumption} % (fold)
+	\label{sec:task_min_energy}
+		
+	% section task_min_energy (end)
 
 % chapter task (end)

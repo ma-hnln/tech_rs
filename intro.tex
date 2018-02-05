@@ -1,22 +1,22 @@
 \chapter{Introduction}
 \label{cha:intro}
-	During the lecture Rechnersysteme II students are able to take part in an exercise about System on Chip (SoC) Kits. These kits provide the user with a tool chain to seamlessly integrate software and hardware components in a single system on a single chip. The SoC Kit in use is based on the SpartanMC processor, which was developed to be implemented in the context of FPGAs making optimal use of their resources.
+	The second exercise of the lecture Rechnersysteme II revolves around the implementation of a software solution for acquiring satellite signals in the Global Positioning System (GPS). Target hardware is the AMIDAR processor, with its dynamic hardware acceleration capabilities based on the CGRA concept. The later sections of this chapter provide a brief overview of both AMIDAR and the CGRA.
 
-	The main assignment of the exercise is to implement a distance meter using an ultrasonic sensor and an OLED display to visualise the measured data. Multiple tasks are provided to get to know and integrate the required peripherals step by step. Software has to be written for communicating with the ultrasonic sensor (SRF02) and the OLED display, which are integrated into the overall system by using jConfig, the system builder application of the SpartanMC SoC Kit. Each peripheral uses its own serial bus interface (I2C and SPI).
+	The main assignment of the exercise is to implement a working GPS acquisition algorithm and then optimise it in two dimensions: performance and energy consumption. Detailed descriptions for both sub tasks can be found in the following chapter [\ref{cha:task}], while the implementation details are deferred to chapter [\ref{impl}].
 
-	Bonus tasks revolve around implementing an interrupt based solution for the bus interface drivers of the ultrasonic sensor and the OLED display. Further more, code profiling of two procedures and verification of their runtime behaviour is part of the set of additional tasks.
+	\section{GPS Acquisition} % (fold)
+	\label{sec:intro_acq}
 
-	\section{SpartanMC SoC Kit} % (fold)
-	\label{sec:spartanmc}
-		All information in this section is taken from the lecture Rechnersysteme II or the exercise material.
+	% section intro_acq (end)	
 
-		The SpartanMC SoC Kit is a complete set of hardware and software required to compose a functional SoC. It is build around the SpartanMC processor with its several interesting properties. The most prominent one is the 18 bit wide instruction and data format, which exactly matches the memory and arithmetic features of modern FPGAs, enabling maximal resource utilisation on these platforms. Another special feature of the SpartanMC processor is the sliding register window. This window consists of 16 registers where twelve are sliding up and down a larger stack of overall available registers. Each procedure call forces the register window to change to twelve unused registers while returning from the called procedure releases them.
+	\section{AMIDAR} % (fold)
+	\label{sec:intro_amidar}
 
-		Instructions are executed in a three stage pipeline with a virtual Harvard Architecture being the basis for memory accesses. On the contrary, the actual physical implementation of the memory interface is a Von-Neumann Architecture, based on FPGA local dual ported memory blocks. This memory setup simplifies the pipeline but is problematic in case of external memory.
+	% section intro_amidar (end)
 
-		Around the processor, which is acting as the centerpiece of the SoC, a multitude of peripheral components are provided. Amongst others, multiple bus interfaces and different interrupt controllers are available.
+	\section{CGRA} % (fold)
+	\label{sec:intro_cgra}
 
-		A system builder application (jConfig) is available to be able to facilitate a simple integration of all these components while the software tool flow is making use of a customised gcc compiler. The overall build process is managed by the make tool and other shell scripts.
-	% section spartanmc (end)
+	% section intro_cgra (end)
 
 % chapter intro (end)

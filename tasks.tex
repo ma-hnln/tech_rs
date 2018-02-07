@@ -1,15 +1,16 @@
 \chapter{Task Description}
 \label{cha:task}
 	This chapter provides an overview of the two tasks which are part of the exercise.
+	First and foremost, it is required that a working implementation of the GPS algorithm is implemented which is going to be the basis for all other optimisations. This initial solution is required to run on the AMIDAR simulator, which is directly taking in the Java code we write.
 
 	\section{Maximum Performance} % (fold)
 	\label{sec:task_max_perf}
-		
+		The first and straight forward goal of this exercise is the the optimisation of the Acquisition algorithm in the performance domain. Mathematical and code optimisations are allowed, just like using a completely different CGRA than the initial one. Parameters of the scheduler are also changeable.
+		The used metric for measuring the results is the cycle counter of the AMIDAR simulator.
 	% section task_max_perf (end)
 
 	\section{Minimum Energy Consumption} % (fold)
 	\label{sec:task_min_energy}
-		
+		Featuring the same rules than the first task, the focus of this task shifts to a energy optimal solution. As the AMIDAT simulator is also tracing energy usage during execution, this will be the used metric.
 	% section task_min_energy (end)
-
 % chapter task (end)

@@ -1,6 +1,32 @@
 \chapter{Implementation} % (fold)
 \label{cha:impl}
 	Just like in the previous chapter [\ref{cha:task}], every task will have its implementation process described in its own section.
+	Additionally, the first section of this chapter will describe the mathematical changes applied to the algorithm which was given with the task description as this change applies to both dimensions of optimisation. 
+
+	\section{Algorithmic Changes} % (fold)
+	\label{sec:impl_algorithmic_changes}
+		As described in section [\ref{sec:intro_acq}], we are able to use frequency domain multiplication of the the locally available code samples and the received samples. However, the DFT runtime is in $O(n^2)$, where n is the amount of samples in the local code we are trying to match to the received signal. In this case, it is very interesting to reduce the amount of DFT calculations.\\
+		In the original algorithm it is assumed that the carrier wipe off is performed in the time domain. As this operation depends on the Doppler-Shift we are currently evaluating, we have to apply the DFT to every time domain signal with different Doppler-Shift frequency carrier wipe off. However, it can be observed that the carrier wipe off is characterising a frequency shift in the time domain. As there is an analogue operation in the frequency domain, it is possible to perform the DFT only once and apply the frequency shift in the frequency domain. Equation [\ref{eq:freq_dom_shift}] shows that this operation is very simple as it only applies a shift to the calculated DFT samples.
+
+		\begin{equation} 
+			\label{eq:freq_dom_shift}
+			x(n)e^{\frac{j2{\pi}ni}{N}}\quad \laplace\quad X_{DFT}(k-i)_{mod N}
+		\end{equation}
+
+		With 
+
+		\begin{equation} 
+			(k-i)_{mod N}\ =\ (k-i)\ modulo\ N
+		\end{equation}
+
+		and 
+
+		\begin{equation} 
+			i\ =\ -\frac{Nf_d}{f_s}
+		\end{equation}
+
+		where $N$ is the number of samples, $f_d$ is the currently used Doppler-Frequency and $f_s$ the sampling frequency. It has to be noted that $i$ is expected to be a whole number, which is satisfied by the conditions we are operating under.
+	% section impl_algorithmic_changes (end)	
 
 	\section{Maximum Performance} % (fold)
 	\label{sec:impl_max_perf}

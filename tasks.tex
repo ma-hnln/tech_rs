@@ -1,13 +1,13 @@
 \chapter{Task Description}
 \label{cha:task}
 	This chapter provides an overview of the two tasks which are part of the exercise.
-	First and foremost, it is required that a working implementation of the GPS algorithm is implemented which is going to be the basis for all other optimisations. This initial solution is required to run on the AMIDAR simulator, which is directly taking in the Java code we write.
+	First and foremost, it is required that a working implementation of the GPS algorithm is implemented which is going to be the basis for all other optimisations. This initial solution is required to run on the AMIDAR simulator, which is directly executing the Java code we write.
 
 	\section{Algorithm} % (fold)
 	\label{sec:task_algorithm}
 		For implementing the initial solution, we are provided a version of the algorithm for GPS acquisition. The general working of it can be described as follows.
 		Taking in the locally generated (complex) samples of one C/A code and a set of received (complex) samples of the same size like the given C/A code, the algorithm determines if the given samples match the given C/A code. 
-		To do so, some more configuration has to be provided. As satellites are constantly in motion, changing the distance to the receiver, Doppler-Shift has to be taken into account. As it is not known if the satellite is moving closer or further away when acquiring the signal, a range of Doppler-Frequencies has to be checked. With the given sample input and configuration in terms of the Doppler-Frequencies to take into account, acquisition starts by wiping off the carrier from the received signal. This initial step is preformed for every configured Doppler-Frequency and requires that all further steps are also performed for each of its results. 
+		To do so, some more configuration has to be provided. As satellites are constantly in motion, changing the distance to the receiver, Doppler-Shift has to be taken into account. As it is not known if the satellite is moving closer or further away when acquiring the signal, a range of positive and negative Doppler-Frequencies has to be checked. With the given sample input and configuration in terms of the Doppler-Frequencies to take into account, acquisition starts by wiping off the carrier from the received signal. This initial step is preformed for every configured Doppler-Frequency and requires that all further steps are also performed for each of its results. 
 		For cross correlating the code samples with the received samples, we apply the DFT to both and multiply them. This multiplication is performed element wise on the received sample DFT result and the complex conjugated DFT result of the code samples.
 		After applying the inverse DFT, to the sample vector resulting from the latest multiplication, the vector is searched for its maximum value. As complex values do not confer meaning to minimum and maximum, only the absolute value of the complex number is taken into account when searching the maximum. The position of the found maximum is treated as the phase shift of the code in question. 
 		Remembering that we have to execute the previous steps for each Doppler-Frequency, another component of the result is the one Doppler-Frequency which yielded the maximum absolute correlation result. 
@@ -22,6 +22,6 @@
 
 	\section{Minimum Energy Consumption} % (fold)
 	\label{sec:task_min_energy}
-		Featuring the same rules than the first task, the focus of this task shifts to a energy optimal solution. As the AMIDAT simulator is also tracing energy usage during execution, this will be the used metric.
+		Featuring the same rules than the first task, the focus of this task shifts to a energy optimal solution. As the AMIDAR simulator is also tracing energy usage during execution, this will be the used metric.
 	% section task_min_energy (end)
 % chapter task (end)

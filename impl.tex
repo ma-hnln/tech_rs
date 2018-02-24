@@ -3,30 +3,66 @@
 	Just like in the previous chapter [\ref{cha:task}], every task will have its implementation process described in its own section.
 	Additionally, the first section of this chapter will describe the mathematical changes applied to the algorithm which was given with the task description as this change applies to both dimensions of optimisation. 
 
-	\section{Algorithmic Changes} % (fold)
+	\section{Algorithm} % (fold)
 	\label{sec:impl_algorithmic_changes}
-		As described in section [\ref{sec:intro_acq}], we are able to use frequency domain multiplication of the the locally available code samples and the received samples. However, the DFT runtime is in $O(n^2)$, where n is the amount of samples in the local code we are trying to match to the received signal. In this case, it is very interesting to reduce the amount of DFT calculations.\\
-		In the original algorithm it is assumed that the carrier wipe off is performed in the time domain. As this operation depends on the Doppler-Shift we are currently evaluating, we have to apply the DFT to every time domain signal with different Doppler-Shift frequency carrier wipe off. However, it can be observed that the carrier wipe off is characterising a frequency shift in the time domain. As there is an analogue operation in the frequency domain, it is possible to perform the DFT only once and apply the frequency shift in the frequency domain. Equation [\ref{eq:freq_dom_shift}] shows that this operation is very simple as it only applies a shift to the calculated DFT samples.
+		The process of optimisation is generally a very iterative one, even more so in face of different algorithmic possibilities which we were exploring in the course of this work. It is the purpose of this section to show the different approaches taken and why they have been dismissed or approved for solving the given tasks.
 
-		\begin{equation} 
-			\label{eq:freq_dom_shift}
-			x(n)e^{\frac{j2{\pi}ni}{N}}\quad \laplace\quad X_{DFT}(k-i)_{mod N}
-		\end{equation}
+		\subsection{Initial Algorithm} % (fold)
+		\label{sub:initial_algorithm}
+			Section [\ref{sec:task_algorithm}] explains the algorithm given with the task description. It was implemented as the very first solution for the given tasks and served mainly for getting to know the framework and having a basis to work from. It excelled in this domain but showed very quickly that it is not a feasible solution for the given tasks as it is too slow with clock cycle counts well over \num{100} million. 
+		% subsection initial_algorithm (end)
 
-		With 
+		\subsection{Changes to the Initial Algorithm} % (fold)
+		\label{sub:changes_to_the_initial_algorithm}
+			As described in section [\ref{sec:task_algorithm}], we are able to use frequency domain multiplication of the the locally available code samples and the received samples. However, the DFT runtime is in $O(n^2)$, where n is the amount of samples in the local code we are trying to match to the received signal. In this case, it is very interesting to reduce the amount of DFT calculations.\\
+			In the original algorithm it is assumed that the carrier wipe off is performed in the time domain. As this operation depends on the Doppler-Shift we are currently evaluating, we have to apply the DFT to every time domain signal with different Doppler-Shift frequency carrier wipe off. However, it can be observed that the carrier wipe off is characterising a frequency shift in the time domain. As there is an analogue operation in the frequency domain, it is possible to perform the DFT only once and apply the frequency shift in the frequency domain. Equation [\ref{eq:freq_dom_shift}] shows that this operation is very simple as it only applies a shift to the calculated DFT samples.
 
-		\begin{equation} 
-			(k-i)_{mod N}\ =\ (k-i)\ modulo\ N
-		\end{equation}
+			\begin{equation} 
+				\label{eq:freq_dom_shift}
+				x(n)e^{\frac{j2{\pi}ni}{N}}\quad \laplace\quad X_{DFT}(k-i)_{mod N} % it is stupid, but \laplace yields the symbol I expect when talking about time -> frequency transforms
+			\end{equation}
 
-		and 
+			With 
 
-		\begin{equation} 
-			i\ =\ -\frac{Nf_d}{f_s}
-		\end{equation}
+			\begin{equation} 
+				(k-i)_{mod N}\ =\ (k-i)\ modulo\ N
+			\end{equation}
 
-		where $N$ is the number of samples, $f_d$ is the currently used Doppler-Frequency and $f_s$ the sampling frequency. It has to be noted that $i$ is expected to be a whole number, which is satisfied by the conditions we are operating under.
-	% section impl_algorithmic_changes (end)	
+			and 
+
+			\begin{equation}
+				\label{eq:i_res}
+				i\ =\ -\frac{Nf_d}{f_s}
+			\end{equation}
+
+			where $N$ is the number of samples, $f_d$ is the currently used Doppler-Frequency and $f_s$ the sampling frequency. Equation [\ref{eq:i_res}] results from the following equation [\ref{eq:i_eq}]. It has to be noted that $i$ is expected to be a whole number.
+
+			\begin{equation} 
+				\label{eq:i_eq}
+				e^{\frac{-j2{\pi}nf_d}{f_s}} = e^{\frac{j2{\pi}ni}{N}}
+			\end{equation}
+
+			Initial tests of this approach showed that it is indeed feasible and performs much better than calculating the DFT for multiple different time domain sample vectors. Unfortunately, it is not possible to use it for each of the given tests as it depends on $i$ being a whole number. In our setup, this is the case for tests which feature \num{400} samples as input. As this approach could never solve one test of the given tests, it was dismissed.
+		% subsection changes_to_the_initial_algorithm (end)
+		
+		\section{Convolution in the Time Domain} % (fold)
+		\label{sec:convolution_in_the_time_domain}
+			% TODO
+		% section convolution_in_the_time_domain (end)
+
+		\section{TODO: Name of the latest approach} % (fold)
+		\label{sec:todo_name_of_the_latest_approach}
+			% TODO
+		% section todo_name_of_the_latest_approach (end)
+	% section impl_algorithmic_changes (end)
+
+	\section{CGRA Changes} % (fold)
+	\label{sec:cgra_changes}
+		The initially provided CGRA is based on a mesh of \num{16} almost homogeneous PEs. Four of the \num{16} PEs are equipped with memory access operations and live out ports to provide the calculated results to the AMIDAR bus system. All other PEs feature the complete set of available AMIDAR CGRA operations, including some which are never used by our code. The most obviously unused operations are all double precision floating point related and are not present any more in the PEs we are using now. All other operations in the used PEs remain the same. 
+		More changes to the initial composition are observable when looking at the introduced connection scheme. It is obvious that more connections between individual PEs make it easier the schedule a kernel on all of them. In the most extreme case, a regular connection scheme may be applied, which connects each PE to all the others in the given array. This in turn enables each PE to read results from all other PEs which makes it simpler to schedule the given kernel on the array and yields better cycle counts in the end. All of our CGRA compositions are now using the regular connection scheme as it yields the best results when only looking at the resulting clock cycles. However, when taking into account that a real implementation of a regularly interconnected 16 PE CGRA is probably immensely more expensive (chips space and timing related) than an irregularly connected 16 PE CGRA, it has to be noted that only the used evaluation mechanism (counting clock cycles) is enabling us to use such a solution. Real implementations would have to carefully increase the amount of connections per PE while constantly benchmarking the resulting CGRA in the context of actual execution time for a given application.
+		The amount of PEs used in the array was not increased as no notable gains could be observed. It seems that the upper limit of four memory accessing PEs is responsible for harshly limiting the gains of adding more PEs. 
+		However, reducing the amount of PEs from \num{16} to eight brought significant changes in the domain of energy consumption while also preserving some of the speed up of the CGRA execution.
+	% section cgra_changes (end)
 
 	\section{Maximum Performance} % (fold)
 	\label{sec:impl_max_perf}

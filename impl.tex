@@ -1,3 +1,5 @@
+\usepackage{amsmath}
+\usepackage{amssymb}
 \chapter{Implementation} % (fold)
 \label{cha:impl}
 	Just like in the previous chapter [\ref{cha:task}], every task will have its implementation process described in its own section.
@@ -46,31 +48,113 @@
 		% subsection changes_to_the_initial_algorithm (end)
 		
 		\section{Convolution in the Time Domain} % (fold)
-		\label{sec:convolution_in_the_time_domain}
-			% TODO
-		% section convolution_in_the_time_domain (end)
-
-		\section{TODO: Name of the latest approach} % (fold)
-		\label{sec:todo_name_of_the_latest_approach}
-			% TODO
-		% section todo_name_of_the_latest_approach (end)
-	% section impl_algorithmic_changes (end)
+		\label{sec:convolution_in_the_time_domain}\newline
+	  		
+	  		As stated above, the method which implies using a frequency shift to the calculated DFT samples is valid only for a certain number of samples. To overcome this issue, another mathematical transformation needs to be taken into consideration. Having the original code as a starting point, the multiplication of the code samples and the received samples in frequency domain is now replaced by their circular convolution in time domain. This second solution is based on the following formula:
+      \begin{equation} 
+  				\label{eq:circular_conv}
+  				x_{1}(n) \circledast x_{2}(n)\quad \laplace\quad X_{DFT,1}(k)X_{DFT,2}(k)
+  			\end{equation} 
+      Because in frequency domain we had to compute the complex conjugate of the code samples, in time domain the corresponding IDFT is needed in order to calculate correctly the circular convolution. Thus, the DFT of the code samples, its corresponding complex conjugate and its IDFT is computed outside of the loop going through all the frequencies. Inside of the loop, only the circular convolution is required, without transforming the received samples to frequency domain. Because of this, the solution is faster in comparison to the original code. It can be further improved by using equation (6):
+      \begin{equation} 
+      				\label{eq:complex_conj}
+              x(-n) \quad \laplace\quad X(e^{-j{\omega}})
+      \end{equation} 
+      
+      Using this formula, there is no need to compute the transformation of the code samples in frequency domain. Thus, only the loop going through all the frequencies remains. Now, when computing the circular convolution, the term \begin{equation} \label{eq:idft_dft} IDFT(\overline {DFT(code\_samples(n)})) \end{equation}, can be replaced by \begin{equation} \label{eq:code_samples} code\_samples(-n) \end{equation}\newline 
+      
+      While optimizing the code, we notice that using "if" statements inside of a loop, decreases the quality of the result. Thus, we try to avoid this construct as much as possible. One such example is when computing the modulo of a difference required for the circular convolution. The terms of the difference are the control variables of two nested loops. The difference could give negative results, which need to be adjusted. Instead of using a conditional clause to check whether the result is positive or not, we break the inner loop into two loops and compute the differnce in such a way that the result will allways be positive. \newline
+      
+      Addtitionally, when implementing the code, we used float type variables only in places where they were absolutly required and intereger variables in the rest of the code. Integer computations are conducted faster by the PEs in comparison to the floating point ones. 
+      
+  
 
 	\section{CGRA Changes} % (fold)
-	\label{sec:cgra_changes}
-		The initially provided CGRA is based on a mesh of \num{16} almost homogeneous PEs. Four of the \num{16} PEs are equipped with memory access operations and live out ports to provide the calculated results to the AMIDAR bus system. All other PEs feature the complete set of available AMIDAR CGRA operations, including some which are never used by our code. The most obviously unused operations are all double precision floating point related and are not present any more in the PEs we are using now. All other operations in the used PEs remain the same. 
-		More changes to the initial composition are observable when looking at the introduced connection scheme. It is obvious that more connections between individual PEs make it easier the schedule a kernel on all of them. In the most extreme case, a regular connection scheme may be applied, which connects each PE to all the others in the given array. This in turn enables each PE to read results from all other PEs which makes it simpler to schedule the given kernel on the array and yields better cycle counts in the end. All of our CGRA compositions are now using the regular connection scheme as it yields the best results when only looking at the resulting clock cycles. However, when taking into account that a real implementation of a regularly interconnected 16 PE CGRA is probably immensely more expensive (chips space and timing related) than an irregularly connected 16 PE CGRA, it has to be noted that only the used evaluation mechanism (counting clock cycles) is enabling us to use such a solution. Real implementations would have to carefully increase the amount of connections per PE while constantly benchmarking the resulting CGRA in the context of actual execution time for a given application.
+	\label{sec:cgra_changes}\newline
+	
+		The initially provided CGRA is based on a mesh of \num{16} almost homogeneous PEs. Four of the \num{16} PEs are equipped with memory access operations and live out ports to provide the calculated results to the AMIDAR bus system. All other PEs feature the complete set of available AMIDAR CGRA operations, including some which are never used by our code. The most obviously unused operations are all double precision floating point related and are not present any more in the PEs we are using now. All other operations in the used PEs remain the same.\newline
+		
+		More changes to the initial composition are observable when looking at the introduced connection scheme. It is obvious that more connections between individual PEs make it easier the schedule a kernel on all of them. In the most extreme case, a regular connection scheme may be applied, which connects each PE to all the others in the given array. This in turn enables each PE to read results from all other PEs which makes it simpler to schedule the given kernel on the array and yields better cycle counts in the end. All of our CGRA compositions are now using the regular connection scheme as it yields the best results when only looking at the resulting clock cycles. However, when taking into account that a real implementation of a regularly interconnected 16 PE CGRA is probably immensely more expensive (chips space and timing related) than an irregularly connected 16 PE CGRA, it has to be noted that only the used evaluation mechanism (counting clock cycles) is enabling us to use such a solution. Real implementations would have to carefully increase the amount of connections per PE while constantly benchmarking the resulting CGRA in the context of actual execution time for a given application.\newline
+		
 		The amount of PEs used in the array was not increased as no notable gains could be observed. It seems that the upper limit of four memory accessing PEs is responsible for harshly limiting the gains of adding more PEs. 
 		However, reducing the amount of PEs from \num{16} to eight brought significant changes in the domain of energy consumption while also preserving some of the speed up of the CGRA execution.
 	% section cgra_changes (end)
 
+
+  \section{Testing Several Configurations} % (fold)
+	\label{sec:impl_max_perf}\newline
+	
+	In order to find the solutions with maximum performance or minimum energy consumption, several configurtions and parameters need to be tested. 
+	
+	In the first analysis, the unroll factor is sweeped. The configuration used implied 16 PEs with regular connection scheme. The results are shown in the following table:
+	
+	\begin{center}
+    \begin{tabular}{||c | c c c ||} 
+      \hline
+      Unroll Factor & Ticks & Energy consumption & Execution Time (ms)\\ [0.5ex] 
+      \hline\hline
+      6 & 78934936 & 437077242.501 & 110987 \\
+      \hline
+      8 & 78133737 & 418241682.100 & 95030 \\
+      \hline
+      10 & 77433563 & 403497726.584 & 96829 \\
+      \hline
+      12 & 77238648 & 402311972.408 & 94742 \\
+      \hline
+      14 & 77809003 & 413592843.933 & 116207 \\  
+      \hline
+      16 & 77824801 & 408863001.365 & 134778 \\  
+      \hline
+      18 & 77467713 & 405783458.167 & 105838 \\ 
+      \hline
+      20 & 77940581 & 415098635.512 & 117024 \\  
+      \hline
+      32 & 79335651 & 442395379.718 & 147678 \\ [1ex] 
+      \hline
+    \end{tabular}
+  \end{center}\newline
+  
+  The best result is obtained when using an unroll factor of 12. Thus, this unroll factor will be used further on when testing other parameters. \newline
+  
+  In the second analysis, several configurations of the CGRA are tested. We start with the already available ones and than modify them by implementing a regular interconnection scheme and removing double operations from the FU. When testing the given configuration for four PEs, the following error occurres:"Not able to synthesize: Context memory is too small. Needed 1098 contexts. Only 256 available". Thus, we increase the context size to 4096. The results are shown in the next table:
+  
+  \begin{center}
+    \begin{tabular}{||c | c c c ||} 
+      \hline
+      Configuration & Ticks & Energy consumption & Exec. Time (ms)\\ [0.5ex] 
+      \hline\hline
+      Config.  4 & 100568552 & 224752437.155 & 107566 \\
+      \hline
+      Config. 16 & 83823274 &462352550.408 & 115889 \\
+      \hline
+      Config. 20  & 83373151 & 561413729.558 & 131898 \\
+      \hline
+      \makecell{Config.  8\\Regular Interconnection\\ no double} & 80363871 & 219663485.474 & 88570 \\
+      \hline
+      {Config. 16 \\Regular Interconnection\\ no double}
+ & 77238648 & 402311972.408 & 94742 \\  
+      \hline
+      {Config. 24 \\Regular Interconnection\\ no double}
+ & 77313506 & 658639277.562 & 119883 \\  
+      \hline
+    \end{tabular}
+  \end{center}
+  
+	% section impl_max_perf (end)
 	\section{Maximum Performance} % (fold)
 	\label{sec:impl_max_perf}
+	\newline
+	After runing several tests, we notice that the solution which yelds the best performance is for an unroll factor of 12, while using 16 PEs connected using a regular scheme. The interconnection strategy plays an important role in maximising the performance. However, this comes with higher costs. Additionally, for maximising performance, we avoided using conditional clauses in the code and we used integer variables where allowed. Additionally, we tried to construct the code in such a way that the computations could be run in parallel. We must point out, that when measuring the performance, the ticks number was taken into consideration. However, when using a regular interconnection, it is highly probable that the clock freqency will get lower and thus the overall time will grow. 
 		
 	% section impl_max_perf (end)
 
 	\section{Minimum Energy Consumption} % (fold)
 	\label{sec:impl_min_energy}
+	When measuring the power consumption, the number of PEs used in the CGRA is the main factor that influences the result. To obtain a good energy consumption, we used just 3 PEs. It is unlinkley that such a configuration would be useful in practical cases. For this configuration we obtained an energy consumption of: 177261309.640.
 		
 	% section impl_min_energy (end)
 % chapter impl (end)
+
+
+
+\end{document}

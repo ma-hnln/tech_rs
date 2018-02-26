@@ -59,6 +59,31 @@
 			Additionally, when implementing the code, we used float type variables only in places where they were absolutely required and integer variables in the rest of the code. Integer computations are conducted faster by the PEs in comparison to the floating point ones. 
 		% subsection convolution_in_the_time_domain (end)
 	% impl_algorithmic_changes (end)
+	
+		\section{Testing our implementation} % (fold)
+	\label{sec:test_impl}
+		After implementing the code, we need to test whether it gives feasible results. We run all the six tests for an unroll factor of 12 and using a CGRA configuration with 16 PEs with a regular connection scheme. The code passes all the tests and gives the following results:
+		\begin{center}
+			\begin{tabular}{||c | c c c ||} 
+			\hline
+			Test number & Ticks & Energy consumption & Execution Time (ms)\\ [0.5ex] 
+			\hline\hline
+			1 & 77396741 & 405345641.736 & 185692 \\
+			\hline
+			2 & 77215522 & 404817134.050 & 320418 \\
+			\hline
+			3 & 77318793 & 405118151.353 & 300279 \\
+			\hline
+			4 & 77160483 & 404691683.578 & 307495 \\
+			\hline
+			5 & 96283305 & 539195938.977 & 289390 \\  
+			\hline
+			6 & 77839517 & 409169958.157 & 172442 \\  
+			\hline
+			\end{tabular}
+		\end{center}
+		
+	% section test_impl (end)
 
 	\section{CGRA Changes} % (fold)
 	\label{sec:cgra_changes}
@@ -69,6 +94,9 @@
 		The amount of PEs used in the array was not increased as no notable gains could be observed. It seems that the upper limit of four memory accessing PEs is responsible for harshly limiting the gains of adding more PEs. 
 		However, reducing the amount of PEs from \num{16} to eight brought significant changes in the domain of energy consumption while also preserving some of the speed up of the CGRA execution.
 	% section cgra_changes (end)
+	
+
+
 
 	\section{Testing Several Configurations} % (fold)
 	\label{sec:impl_max_perf}
@@ -80,23 +108,23 @@
 			\hline
 			Unroll Factor & Ticks & Energy consumption & Execution Time (ms)\\ [0.5ex] 
 			\hline\hline
-			6 & 78934936 & 437077242.501 & 110987 \\
+			6 & 79582066 & 449377273.101 & 215307 \\
 			\hline
-			8 & 78133737 & 418241682.100 & 95030 \\
+			8 & 78557499 & 426409740.037 & 179675 \\
 			\hline
-			10 & 77433563 & 403497726.584 & 96829 \\
+			10 & 78157745 & 417367066.187 & 189179 \\
 			\hline
-			12 & 77238648 & 402311972.408 & 94742 \\
+			12 & 77396741 & 405345641.736 & 185692 \\
 			\hline
-			14 & 77809003 & 413592843.933 & 116207 \\  
+			14 & 77489539 & 407485036.248 & 177463 \\  
 			\hline
-			16 & 77824801 & 408863001.365 & 134778 \\  
+			16 & 77839517 & 409169958.157 & 172442 \\  
 			\hline
-			18 & 77467713 & 405783458.167 & 105838 \\ 
+			18 & 77881486 & 413682459.689 & 181371 \\ 
 			\hline
-			20 & 77940581 & 415098635.512 & 117024 \\  
+			20 & 77600525 & 408564555.489 & 175593 \\  
 			\hline
-			32 & 79335651 & 442395379.718 & 147678 \\
+			22 & 77966352 & 415544847.986 & 174937 \\
 			\hline
 			\end{tabular}
 		\end{center}
@@ -107,19 +135,19 @@
 		\begin{center}
 			\begin{tabular}{||c | c c c ||} 
 			\hline
-			Configuration & Ticks & Energy consumption & Exec. Time (ms)\\ [0.5ex] 
+			Configuration & Ticks & 	\begin{tabular}{@{}c@{}}Energy \\  Consumption\end{tabular} & 	\begin{tabular}{@{}c@{}}Execution Time\\ (ms)\end{tabular}\\ [0.5ex] 
 			\hline\hline
-			Config.  4 & 100568552 & 224752437.155 & 107566 \\
+			Config.  4 & 101893082 & 231411757.630 & 210058 \\
 			\hline
-			Config. 16 & 83823274 & 462352550.408 & 115889 \\
+			Config. 16 & 83764981 & 461260188.769 & 202527 \\
 			\hline
-			Config. 20 & 83373151 & 561413729.558 & 131898 \\
+			Config. 20 & 83448763 & 563071106.407 & 253477 \\
 			\hline
-			\makecell{Config.  8\\ Regular Interconnection\\ no double} & 80363871 & 219663485.474 & 88570 \\
+			\begin{tabular}{@{}c@{}}Config.  8 \\  Regular Interconnection\\ No Double Precision \end{tabular} & 80104307 & 217189239.239 & 184179 \\
 			\hline
-			\makecell{Config. 16\\ Regular Interconnection\\ no double} & 77238648 & 402311972.408 & 94742 \\  
+			\begin{tabular}{@{}c@{}}Config.  16 \\  Regular Interconnection\\ No Double Precision \end{tabular} & 77396741 & 405345641.736 & 171574 \\  
 			\hline
-			\makecell{Config. 24\\ Regular Interconnection\\ no double} & 77313506 & 658639277.562 & 119883 \\  
+			\begin{tabular}{@{}c@{}}Config.  24 \\  Regular Interconnection\\ No Double Precision \end{tabular} & 77527500 & 664898600.755 & 285638 \\  
 			\hline
 			\end{tabular}
 		\end{center}
@@ -132,6 +160,11 @@
 
 	\section{Minimum Energy Consumption} % (fold)
 	\label{sec:impl_min_energy}
-		When measuring the power consumption, the number of PEs used in the CGRA is the main factor that influences the result. To obtain a good energy consumption, we used just 3 PEs. It is unlikely that such a configuration would be useful in practical cases. For this configuration we obtained an energy consumption of: 177261309.640.
+		When measuring the power consumption, the number of PEs used in the CGRA is the main factor that influences the result. To obtain a good energy consumption, we used just 3 PEs. It is unlikely that such a configuration would be useful in practical cases. Additionally, for obtaining a lower energy consumption, the number of operations computed in parallel is reduced. For example, instead of computing four times in parallel the argument of the sinus and cosinus function, we compute it once and store this value as a variable. For this configuration we obtain an energy consumption of: 178839828.424.
+	% section impl_min_energy (end)
+	
+	\section{Integer values for the code samples} % (fold)
+	\label{sec:impl_min_energy}
+		The values received as code samples are all integer values. Thus if we implement again the function taking into consideration this aspect, the the number of ticks becomes 76348423. An unroll factor of 12 and CGRA configuration with 16 PEs were used. 
 	% section impl_min_energy (end)
 % chapter impl (end)

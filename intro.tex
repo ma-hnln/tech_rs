@@ -20,10 +20,11 @@
 
 	\section{CGRA} % (fold)
 	\label{sec:intro_cgra}
-		The Coarse Grain Reconfigurable Array (CGRA) is the targeted hardware accelerator of this task. Like FPGAs, CGRAs can be reconfigured at runtime but are targeted at word level usage, like arithmetic operations on \num{32} bit values. This reduces the required amount of configuration data (the so called Context) which in turn makes it possible to store more of it, resulting in the ability to change the configuration of individual elements with every clock cycle.
+		The Coarse Grain Reconfigurable Array (CGRA) is the targeted hardware accelerator of this task. Like FPGAs, CGRAs can be reconfigured at runtime but are targeted at word level usage, like arithmetic operations on \num{32} -bit values. This reduces the required amount of configuration data (the so-called Context) which in turn makes it possible to store more of it, resulting in the ability to change the configuration of individual elements with every clock cycle.
 		Multiple Processing Elements (PE) form the back bone of the CGRA. Each comes with its own Context memory which configures its remaining components. PEs hold a register file (RF), an ALU and multiple multiplexers which control the data flow into, out of and inside the PE. A usable array of PEs is required to feature a connection scheme which enables neighbouring PEs to work together.
 		Execution of the whole array, meaning which contexts are used in a given clock cycle, is controlled by the Context Control Unit (CCU). The CCU generates a context counter (CCNT, like a program counter) which is routed to all CGRA components. For conditional branching, the Condition Box (C-Box) is used to determine if the branch is to be taken or not. This is done by evaluating the states of the PE ALUs.
-		Generally and in the context of our task, there are no restrictions imposed related to the structure of the CGRA. This means that inhomogeneous, where PEs are able to execute different sets of instructions, and irregular, where PEs are connected in an arbitrary way, CGRA compositions are allowed and usable.
+		Generally, and in the context of our task, there are no restrictions imposed related to the structure of the CGRA. This means that inhomogeneous, where PEs are able to execute different sets of instructions, and irregular, where PEs are connected in an arbitrary way, CGRA compositions are allowed and usable.
 	% section intro_cgra (end)
 
 % chapter intro (end)
+
